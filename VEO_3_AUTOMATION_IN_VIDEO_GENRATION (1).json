@@ -1,0 +1,714 @@
+{
+  "name": "VEO_3_AUTOMATION_IN_VIDEO_GENRATION",
+  "nodes": [
+    {
+      "parameters": {
+        "description": "Use the tool to think about something. It will not obtain new information or change the database but just append the thought to the log. Use it when complex reasoning or some cache memory is needed."
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        896
+      ],
+      "id": "f5206d2b-51ad-4675-954d-00025feca896",
+      "name": "Think2"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "[\n  {\n    \"Caption\": \"Diver Removes Nets Off Whale 🐋 #whalerescue #marinelife #oceanrescue #seahelpers #love #nature #instagood #explore #viral #savenature #oceanguardians #cleanoceans\",\n    \"Idea\": \"Diver carefully cuts tangled net from distressed whale in open sea\",\n    \"Environment\": \"Open ocean, sunlight beams through water, diver and whale, cinematic realism\",\n    \"Status\": \"for production\"\n  }\n]\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        -192,
+        896
+      ],
+      "id": "f521732f-dd4c-4c04-84a4-bfe22d138ceb",
+      "name": "Parser1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5cedc3de-6221-4d7e-a6c8-82f4cb9cf0e9",
+              "name": "PROJECT_ID",
+              "type": "string",
+              "value": "sage-instrument-466606-v8"
+            },
+            {
+              "id": "90019751-e2d5-4764-9bf9-e13916dcc528",
+              "name": "MODEL_ID",
+              "type": "string",
+              "value": "veo-3.0-generate-preview"
+            },
+            {
+              "id": "67ab205c-82b3-4263-99c4-c906a0ca6ae9",
+              "name": "LOCATION_ID",
+              "type": "string",
+              "value": "us-central1"
+            },
+            {
+              "id": "413415fb-60c5-4d0d-ac45-1e6178a55227",
+              "name": "TEXT_PROMPT",
+              "type": "string",
+              "value": "={{ $json.output }}"
+            },
+            {
+              "id": "bf0910e1-b757-4852-9341-a7792161f89b",
+              "name": "ACCESS_TOKEN",
+              "type": "string",
+              "value": "ya29.a0AS3H6NxP60iSU2z1vVLNOvcH7FwJOm_vDuyeoZ2WzWGSmPI9cdfs-rSYG3lRIsLuumm1Rg2ctfoZ5KVZyiH6KrM5xOvgNlRZSoe-Gv4vAGPgJieZ9FQaaCbwnxDTfMeKe7TuvHy0sYdt016km-UfGY5ofX2NZktiATy2C9ivx78EfFfpdimNpsLLIKB2AOpLMlyA-duayAgAHjAW-jxzgwRUAVxE05Gh615psBOlIdpDgkatAjB256nUNpUb8x_NTbI3UZ9m9csZv15J1p6GZWaE0kJe-50cMvfCKZqUR2Ack3IX5KTHzPaBV_mKhYwx_c8LEtFxQwaCgYKAaESARQSFQHGX2MiEAby5qOPsRjXGfLF-pf5iw0337"
+            },
+            {
+              "id": "17954335-b96b-4813-9c4a-20817d675448",
+              "name": "API_ENDPOINT",
+              "type": "string",
+              "value": "us-central1-aiplatform.googleapis.com"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "cebf3c17-9814-41c0-a0b6-1af69c412336",
+      "name": "Setting2",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -224,
+        1040
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "response.videos[0].bytesBase64Encoded",
+        "options": {}
+      },
+      "id": "6c107535-187e-4d04-8737-e8599f06ae29",
+      "name": "Convert to File2",
+      "type": "n8n-nodes-base.convertToFile",
+      "position": [
+        -16,
+        1376
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://{{ $('Setting2').item.json.API_ENDPOINT }}/v1/projects/{{ $('Setting2').item.json.PROJECT_ID }}/locations/{{ $('Setting2').item.json.LOCATION_ID }}/publishers/google/models/{{ $('Setting2').item.json.MODEL_ID }}:fetchPredictOperation\n",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Setting2').item.json.ACCESS_TOKEN }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"operationName\": \"{{ $json.name }}\"\n}\n",
+        "options": {}
+      },
+      "id": "c8e3e43f-74e1-47f4-b8f9-51b9caa28d2e",
+      "name": "Vertex AI-fetch1",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -288,
+        1328
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "name": "={{ $('Ideas AI Agent5').item.json.output[0].Idea.replace(/\\s+/g, '_') + '_' + $now.toMillis() }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1YO0HNX77AcFXANyh-HGNPF2hJN9JJG5K",
+          "mode": "list",
+          "cachedResultName": "VEO_3_FILE",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1YO0HNX77AcFXANyh-HGNPF2hJN9JJG5K"
+        },
+        "options": {}
+      },
+      "id": "a3897e7a-17e9-4769-8946-897bc660bb80",
+      "name": "Upload file2",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        256,
+        1328
+      ],
+      "typeVersion": 3,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "RlGQRF5lIe2l0PKz",
+          "name": "Google Drive account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1nG9E4KGhmd6HffEithlRVe3yiF2Or5W7LaDEGbIlc1k",
+          "mode": "list",
+          "cachedResultName": "Veo 3<>n8n automation ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nG9E4KGhmd6HffEithlRVe3yiF2Or5W7LaDEGbIlc1k/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1519704605,
+          "mode": "list",
+          "cachedResultName": "Sheet2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nG9E4KGhmd6HffEithlRVe3yiF2Or5W7LaDEGbIlc1k/edit#gid=1519704605"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "idea": "={{ $('Ideas AI Agent5').item.json.output[0].Idea }}",
+            "production": "done",
+            "final_output": "={{ $('Upload file2').item.json.webViewLink }}",
+            "row_number": 0
+          },
+          "matchingColumns": [
+            "idea"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "idea",
+              "displayName": "idea",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "caption",
+              "displayName": "caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "production",
+              "displayName": "production",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "environment_prompt",
+              "displayName": "environment_prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "final_output",
+              "displayName": "final_output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        496,
+        1328
+      ],
+      "id": "a348aa83-fcb4-4181-aa2a-e36290134108",
+      "name": "Log Final Video in Sheet2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "RxR5CX0d4AUKdOZa",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://{{ $json.API_ENDPOINT }}/v1/projects/{{ $json.PROJECT_ID }}/locations/{{ $json.LOCATION_ID }}/publishers/google/models/{{ $json.MODEL_ID }}:predictLongRunning",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.ACCESS_TOKEN }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"endpoint\": \"projects/n8n-project-440404/locations/us-central1/publishers/google/models/veo-3.0-generate-preview\",\n  \"instances\": [\n    {\n      \"prompt\": {{ JSON.stringify($json.TEXT_PROMPT) }}\n    }\n  ],\n  \"parameters\": {\n    \"aspectRatio\": \"16:9\",\n    \"sampleCount\": 1,\n    \"durationSeconds\": \"8\",\n    \"personGeneration\": \"allow_all\",\n    \"addWatermark\": true,\n    \"includeRaiReason\": true,\n    \"generateAudio\": true\n  }\n}\n",
+        "options": {}
+      },
+      "id": "d1f774cf-e2db-4c13-bc65-62adb3904b70",
+      "name": "Vertex AI-VEO1",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -656,
+        1328
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -672,
+        784
+      ],
+      "id": "e8ac9f17-7f22-49e4-8459-740cea4e65ce",
+      "name": "Schedule Trigger2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Give me an idea about [a yeti speaking to a camera and doing a Vlog through his selfie stick ]",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "> You are an AI designed to generate 1 immersive, realistic idea based on a user-provided topic. Your output must be formatted as a JSON array (single line) and follow all the rules below exactly.\n> \n> \n> RULES:\n> \n> Only return 1 idea at a time.\n> \n> The user will provide a key topic (e.g. “urban farming,” “arctic survival,” “street food in Vietnam”).\n> \n> The Idea must:\n> \n> Be under 13 words.\n> \n> Describe an interesting and viral-worthy moment, action, or event related to the provided topic.\n> \n> Can be as surreal as you can get, doesn't have to be real-world!\n> \n> Involves a character.\n> \n> The Caption must be:\n> \n> Short, punchy, and viral-friendly.\n> \n> Include one relevant emoji.\n> \n> Include exactly 12 hashtags in this order:\n> ** 4 topic-relevant hashtags\n> ** 4 all-time most popular hashtags\n> ** 4 currently trending hashtags (based on live research)\n> \n> All hashtags must be lowercase.\n> \n> Set Status to \"for production\" (always).\n> \n> The Environment must:\n> \n> Be under 20 words.\n> \n> Match the action in the Idea exactly.\n> \n> Clearly describe:\n> \n> Where the event is happening (e.g. rooftop, jungle trail, city alley, frozen lake)\n> \n> Key visuals or background details (e.g. smoke rising, neon lights, fog, birds overhead)\n> \n> Main participants (e.g. farmer, cook, mechanic, rescue team, animal)\n> \n> Style of scene (e.g. cinematic realism, handheld docu-style, aerial tracking shot, macro close-up)\n> \n> Ok with fictional settings\n> \n> OUTPUT FORMAT (single-line JSON array):\n> \n> [\n> {\n> \"Caption\": \"Short viral title with emoji #4_topic_hashtags #4_all_time_popular_hashtags #4_trending_hashtags\",\n> \"Idea\": \"Short idea under 13 words\",\n> \"Environment\": \"Brief vivid setting under 20 words matching the action\",\n> \"Status\": \"for production\"\n> }\n> ]\n>"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -384,
+        784
+      ],
+      "id": "6654ab3f-a066-4e81-b38b-96c155e6bee6",
+      "name": "Ideas AI Agent4"
+    },
+    {
+      "parameters": {
+        "modelName": "=models/gemini-2.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        896
+      ],
+      "id": "0f73271a-d5b0-4f4b-a1e4-9671ef400bb0",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Coap6YWyudHuiZMK",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1nG9E4KGhmd6HffEithlRVe3yiF2Or5W7LaDEGbIlc1k",
+          "mode": "list",
+          "cachedResultName": "Veo 3<>n8n automation ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nG9E4KGhmd6HffEithlRVe3yiF2Or5W7LaDEGbIlc1k/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nG9E4KGhmd6HffEithlRVe3yiF2Or5W7LaDEGbIlc1k/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "idea": "={{ $json.output[0].Idea }}",
+            "id": "=Row()-1",
+            "caption": "={{ $json.output[0].Caption }}",
+            "production": "={{ $json.output[0].Status }}",
+            "environment_prompt": "={{ $json.output[0].Environment }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "idea",
+              "displayName": "idea",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "caption",
+              "displayName": "caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "production",
+              "displayName": "production",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "environment_prompt",
+              "displayName": "environment_prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "final_output",
+              "displayName": "final_output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        128,
+        784
+      ],
+      "id": "98c07fdd-8c8d-4845-a69a-8163177994a7",
+      "name": "Append or update row in sheet2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "RxR5CX0d4AUKdOZa",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "> Give me a Veo3 prompt for this idea:\n{{ $json.idea }}\n> \n> \n> This is the environment:\n> {{ $json.environment_prompt }}\n>",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "A tall, muscular but cheerful and enthusiastic white-furred Yeti is vlogging across India. He always vlogs with a warm, friendly smile. He wears black sunglasses to look cool and a colorful scarf (gamcha-style) draped over one shoulder. His body language is expressive, and he often uses hand gestures. He has clear, smooth Hindi pronunciation, especially for cultural and spiritual words like \"darshan,\" \"mandir,\" \"Jyotirling,\" and Indian place names. He speaks naturally and confidently into the camera.\nLocation Title Animation:\nThe words “Mallikarjuna – Srisailam” fade in softly at the top of the frame for 2 seconds and then fade out.\n\nScene Setup:\nForested green hills surrounding the ancient Mallikarjuna temple complex. Morning mist rises from the valley. The gopuram (temple tower) is partially visible through the trees. Some pilgrims walk in the background.\n\nCamera Angle:\nA smooth drone shot slowly descending from above toward the temple steps, revealing the Yeti standing near a large stone archway at the entrance.\n\nYeti Action:\nHe waves with excitement, then points with awe toward the temple and looks into the camera with a wide smile.\n\nYeti Line (in natural Hindi):\n🎙️ “Ab main hoon Mallikarjuna mein! Yeh jagah itni shaant aur pavitra lagti hai — sach mein adbhut!”\n\n(Voice tone is calm and respectful, with rising enthusiasm at the end. Natural pronunciation of Mallikarjuna, shaant, pavitra, adbhut.)\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -672,
+        1040
+      ],
+      "id": "9c198d62-6fad-43ce-94ff-ca8b1641814d",
+      "name": "Ideas AI Agent5"
+    },
+    {
+      "parameters": {
+        "amount": 3,
+        "unit": "minutes"
+      },
+      "id": "9021e1ea-fc4b-4228-a74a-0bfebbee9af8",
+      "name": "Wait3",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        -464,
+        1328
+      ],
+      "typeVersion": 1.1,
+      "webhookId": "ca4136c0-182a-43e0-b234-079ffe826eea"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Wait4": {
+      "main": [
+        [
+          {
+            "node": "Log Final Video in Sheet3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Upload file3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Vertex AI-fetch4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ideas AI Agent7": {
+      "main": [
+        [
+          {
+            "node": "Setting3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think2": {
+      "ai_tool": [
+        [
+          {
+            "node": "Ideas AI Agent4",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Ideas AI Agent5",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Ideas AI Agent4",
+            "type": "ai_outputParser",
+            "index": 0
+          },
+          {
+            "node": "Ideas AI Agent5",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Setting2": {
+      "main": [
+        [
+          {
+            "node": "Vertex AI-VEO1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File2": {
+      "main": [
+        [
+          {
+            "node": "Upload file2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vertex AI-fetch1": {
+      "main": [
+        [
+          {
+            "node": "Convert to File2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file2": {
+      "main": [
+        [
+          {
+            "node": "Log Final Video in Sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vertex AI-VEO1": {
+      "main": [
+        [
+          {
+            "node": "Wait3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger2": {
+      "main": [
+        [
+          {
+            "node": "Ideas AI Agent4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ideas AI Agent4": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Ideas AI Agent4",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Ideas AI Agent5",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet2": {
+      "main": [
+        [
+          {
+            "node": "Ideas AI Agent5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ideas AI Agent5": {
+      "main": [
+        [
+          {
+            "node": "Setting2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait3": {
+      "main": [
+        [
+          {
+            "node": "Vertex AI-fetch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "5a19d5f6-e013-40f3-bd9f-c261506d7dfb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7e77f65b76df7f0d0280ecfdf7305fde24406b37c8eb118227a2f6aa4eca0ea3"
+  },
+  "id": "wIFb36laTohLGySP",
+  "tags": []
+}
